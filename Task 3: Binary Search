@@ -1,0 +1,114 @@
+array:      .word   -12341,-922,1337,9999,10221,800000   // array
+size:       .word   6           // number of elements
+x:          .word 1000    // target value
+.global _start
+
+_start:
+	// use A1 to pass n and store the return value
+  LDR   A1, =x //load target value 
+  LDR   A1, [A1] //input value 
+  LDR	A2, =size
+  LDR 	A2, [A2] //loading size of the array 
+  LDR 	A3, =array //load array address
+  BL		binarysearch 
+   
+	
+end:
+	B		end
+
+
+//A4 = low
+//V2 = high
+//V3 = mid
+//V4 = arr[mid]
+
+
+binarysearch:
+	// your code starts here
+	PUSH {V1-V5, LR}
+	
+	MOV A4, #0 //int low = 0;
+	SUB V2, A2, #1 // int high = size - 1
+	
+	//making base cases
+	//if (high >= low) 
+	CMP V2, A4 // high-low
+	BLT error //returns negative 1 
+	
+	//calculating mid -> int mid = high / 2
+	MOV 	V3, V2   // mid = high
+	LSR 	V3, V3, #1   // mid = (high) / 2       
+	
+	//LDR 	V4, [A3, V3, LSL #2]  // V4 = arr[mid]
+	
+	MOV V1, V3
+	ADD V1, V3, V3
+	ADD V1, V1, V1
+	ADD V1, A3, V1 //gets address of Arr[mid]
+	LDR V4, [V1] //stores it in V4 so V4 = arr[mid]
+	
+	//if (arr[mid] == x)
+	CMP V4, A1
+	BEQ found //returns mid
+	// If element is smaller than mid, then it can only be present in left subarray
+	CMP V4, A1
+	BGT searchLeft//if (arr[mid] > x)
+	////////////////////////////////////////////////////////////
+	
+	// Else the element can only be present
+    // in right subarray
+	
+	// modify a3 to a3 +(mid+1)*4
+
+	//ADD A3, A3, V3, LSL #2   // A3 = A3 + (mid * 4)
+	//ADD A3, A3, #4  
+	
+	
+	ADD V5, V3, V3
+	ADD V5, V5, V5
+	ADD A3, A3, V5 //all togther
+	ADD A3, A3, #4
+	
+	// modify a2 to size-mid-1
+	SUB A2, A2, V3
+	SUB A2, A2, #1
+	
+	//POP {V1-V4, LR}
+	BL binarysearch //int result= binarySearch(arr + mid+1, size-mid-1, x);
+	
+	/////////////////////////////////////////////////////////////
+	
+	//if (result==-1) return 1
+	CMP A1, #-1
+	BEQ error
+	
+	//adjusting return values:  return result+mid+1 ;
+	ADD A1, A1, V3 //result + mid
+	ADD A1, A1, #1 // (result + mid) +1
+	POP {V1-V5, LR}
+	BX LR //return to caller 
+	
+found:
+	//returning mid
+	CMP A1, #-1
+	BEQ error //if value is neg one gives error
+	MOV A1, V3 //mid is now the value
+	POP {V1-V5, LR}
+	BX LR //return to caller
+	
+	
+searchLeft:
+	//set high = mid -1
+	MOV A2, V3
+	//SUB V2, V3, #1 //high = mid - 1
+	BL binarysearch //search for new high value
+	POP {V1-V5, LR}
+	BX LR //return back to caller 
+
+
+error: //RETURNS -1
+	MOV A1, #-1
+	POP {V1-V5, LR}
+	BX LR
+
+
