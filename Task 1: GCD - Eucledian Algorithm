@@ -1,0 +1,68 @@
+a: .word 9064
+b: .word 5648
+
+    .global _start
+_start:
+    // A1: stores the gcd result
+    MOV A1, #0
+    
+	// your code starts here
+	LDR A1,=a 		//load address
+	LDR A1, [A1] 	//load value into A1
+	LDR A2,=b 		//load address b into A1
+	LDR A2, [A2] 	//load value into A2
+	
+greatCommDiv_loop:
+
+	
+	
+	
+	
+	CMP A2, #0 		//if (b == 0)	
+	BEQ aIsReturned
+	
+	
+	
+	
+	CMP A1, #0		//if (a == 0) 
+	BEQ bIsReturned //branch to subroutine to return B
+	
+	
+	CMP A1,A2		// while (a != b)
+	BEQ done		//branch out to finishing code 
+	BGT reducing_a  //A1>A2
+	//branch to subroutine to reduce A 
+	//else A2>A1 so A1=A2-A1
+	BLT reducing_b
+	//branch to subroutine to reduce B 
+	
+	
+	
+reducing_a:
+	SUB A1, A1,A2 //A1=A1-A2
+	B greatCommDiv_loop //recursive call
+	//goes back into main function code
+	
+aIsReturned:
+	MOV A1, A1 
+	// this transferes values 
+	B done //exit loop
+	
+	
+reducing_b: //A1<A2
+	SUB A2,A2,A1 //A2=A2-A1
+	B greatCommDiv_loop //recursive call
+	//goes back into main loop 
+
+	bIsReturned:
+	MOV A1, A2 //A2-->A1 replaces the values 
+	B done //exit loop
+	
+	done:
+	B end 
+	
+	
+	// your code ends here
+end:
+    B end //part of starter code should not remove 
+
