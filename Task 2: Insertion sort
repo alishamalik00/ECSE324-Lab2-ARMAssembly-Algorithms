@@ -1,0 +1,90 @@
+array:        .short     -19764, -21098, -29863, -22494, 24345, -28382, 31055, 20805, -14040, 28198, -28177, 0 // array
+.align 2
+size:         .word    11            // number of elements
+
+.global _start
+
+_start:
+	// your code starts here
+	LDR A1, =array // store address of array 
+	LDR A2, =size //store ADDRESS of size of array
+	LDR A2, [A2] //store VALUE of size of array
+	BL insertionSort
+	
+done:
+	B done //stops infinite loop
+	
+insertionSort:
+	PUSH {V1-V5, LR} //return address saved
+	MOV A3, #1 //i=1
+	
+	
+outerloop:
+	CMP A3, A2 //value of i against size
+	BGE sortDone //finished if i > size -> for (i = 1; i < n; i++)
+	
+	//now alloting register for key -> key = arr[i];
+	//LDRSH A4,  [A1, A3, LSL #1] //at address in A1 and at index i stored in A3 
+	MOV V4, A3
+	LSL V4, V4, #1
+	ADD V4, A1, V4 //compute address
+	LDRSH A4, [V4] //load key = arr[i]
+	
+	SUB V1, A3, #1 //j = i - 1; 
+	
+innerloop:
+	//for while loop
+	CMP V1, #-1 	//j >= 0 (doing the edge cases)
+	BLT insertingKey
+	
+	//arr[j] > key)
+	//LDRSH V2, [A1, V1, LSL #1] //creating register for arr[j]
+	
+	MOV V5, V1
+	LSL V5, V5, #1 //multiply by 2
+	ADD V5, A1, V5 //computing address
+	LDRSH V2, [V5] //load value 
+	
+	
+	CMP V2, A4
+	BLE insertingKey // the opposite of arr[j] > key (edgecase)
+	
+	ADD V3, V1, #1 //j+1
+	//STRH V2, [A1, V3, LSL #1] 
+	
+	// arr[j + 1] = arr[j]
+	MOV V5, V3
+	LSL V5, V5, #1
+	ADD V5, A1, V5
+	STRH V2, [V5]  //arr[j + 1] = arr[j]; DONT GET THIS PART!!!!!!!!!
+
+	
+	SUBS V1, V1, #1 // j = j - 1;
+	BGE innerloop //while loop continously 
+	
+	
+insertingKey:
+	//POP {A4} //restoring key 
+	//STRH A4, [A1, V3, LSL #1] 
+	
+	//arr[j + 1] = key;
+	ADD V3, V1, #1
+	MOV V5, V3 
+	LSL V5, V5, #1
+	ADD V5, A1, V5
+	STRH A4, [V5]
+	
+	ADD A3, A3, #1 //i++
+	B outerloop //re-do outer loop 
+	
+sortDone:
+
+	POP {V1-V5, LR} //restore return address
+	BX LR //return to caller
+
+	// your code ends here
+	
+end:
+    B 		end
+	
+
